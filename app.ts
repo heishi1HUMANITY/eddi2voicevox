@@ -97,6 +97,7 @@ const play = (src: Blob): Promise<void> => {
       const audio = new Audio(uri);
       audio.addEventListener('ended', () => {
         resolve();
+        URL.revokeObjectURL(uri);
       });
       audio.play();
     } catch (e) {
