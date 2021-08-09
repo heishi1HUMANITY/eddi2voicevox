@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>eddi2voicevox</title>
+  </head>
+  <body>
+    <main>
+      <p id="message"></p>
+      <label for="speechresponder"
+        >speechresponder.out:
+        <input type="text" name="speechresponder" id="speechresponder"
+      /></label>
+      <label for="speaker"
+        >speaker:
+        <select name="speaker" id="speaker">
+          <option value="0">四国めたん</option>
+          <option value="1">ずんだもん</option>
+        </select>
+      </label>
+      <div id="dictDiv">
+        <label for="dict"
+          >辞書: <input type="text" id="word" /> =>
+          <input type="text" id="read" /><button id="dictSubmit">
+            登録
+          </button></label
+        >
+        <div id="dictList">
+        </div>
+      </div>
+    </main>
+    <style>
+      body {
+        background-color: rgb(165, 212, 173);
+        padding: 1rem;
+        width: 600px;
+      }
+      main {
+        display: flex;
+        flex-direction: column;
+      }
+      main > * {
+        padding-bottom: 1rem;
+      }
+      label[for='dict'] > input,
+      label[for='dict'] > button {
+        margin-left: 0.5rem;
+      }
+      #dictList {
+        background-color: white;
+        height: 150px;
+        overflow: scroll;
+      }
+      #dictList > p {
+        margin: 0.2rem 0;
+        padding: 0 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: rgba(0, 0, 0, 0.1);
+      }
+      #dictList > p:hover > span {
+        display: inline;
+      }
+      #dictList > p > span {
+        color: red;
+        cursor: pointer;
+        display: none;
+      }
+    </style>
+    <script src="./script/app.js"></script>
+  </body>
+</html>

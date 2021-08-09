@@ -1,0 +1,17 @@
+{
+  "name": "eddi2voicevox",
+  "version": "0.0.1",
+  "main": "index.html",
+  "window": {
+    "resizable": true,
+    "show_in_taskbar": false
+  },
+  "scripts": {
+    "start": "nw .",
+    "build": "nwbuild -p win64 -o build/ ."
+  },
+  "devDependencies": {
+    "nw": "^0.55.0-sdk",
+    "nw-builder": "^3.5.7"
+  }
+}
