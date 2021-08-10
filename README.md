@@ -19,7 +19,7 @@ EDDIのspeechresponder.outを読み取り、VOICEVOXで読み上げます
 アプリを初回起動時、「C:/Users/[ユーザー名]/AppData/Roaming/eddi2voicevox」にconfig.jsonが作成されます。  
 config.jsonには以下のデータが保存されています。
 
-```json
+```yaml
 {
   "path": "",           // <= speechresponder.outのパス 
   "translation": true,　// <= 翻訳機能を使用するか
