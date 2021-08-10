@@ -8,16 +8,13 @@
     "show_in_taskbar": false
   },
   "scripts": {
-    "start": "nw .",
-    "build": "nwbuild -p win64 -o build/ ."
+
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^16.4.13",
-    "nw": "^0.55.0-sdk",
-    "nw-builder": "^3.5.7",
     "typescript": "^4.3.5"
   },
   "type": "module"
