@@ -4,6 +4,8 @@ const userInfo = require('os').userInfo;
 const join = require('path').join;
 const messageP = document.querySelector('#message') ?? document.createElement('p');
 const speechresponderDom = document.querySelector('#speechresponder') ?? document.createElement('input');
+const deeplEnableDom = document.querySelector('#deeplEnable') ?? document.createElement('input');
+const deeplApiKeyDom = document.querySelector('#deeplKey') ?? document.createElement('input');
 const speakerDom = document.querySelector('#speaker') ?? document.createElement('select');
 const dictKeyDom = document.querySelector('#word') ?? document.createElement('input');
 const dictReadDom = document.querySelector('#read') ?? document.createElement('input');
@@ -12,8 +14,7 @@ const dictList = document.querySelector('#dictList') ?? document.createElement('
 const configPath = join(userInfo().homedir, 'AppData', 'Roaming', 'eddi2voicevox', 'config.json');
 const loadConfig = async () => {
     try {
-        await fs.stat(configPath)
-            .catch(async () => {
+        await fs.stat(configPath).catch(async () => {
             const base = JSON.parse(await fs.readFile('./config.json', 'utf-8'));
             base.path = join(userInfo().homedir, 'AppData', 'Roaming', 'EDDI', 'speechresponder.out').toString();
             await fs.mkdir(join(userInfo().homedir, 'AppData', 'Roaming', 'eddi2voicevox'));
@@ -35,7 +36,7 @@ const getAudioBlob = async (txt, speaker) => {
         const queryRes = await fetch(uri.toString(), {
             method: 'POST',
             headers: {
-                'accept': 'application/json',
+                accept: 'application/json',
             },
         });
         if (queryRes.ok === false)
@@ -46,10 +47,10 @@ const getAudioBlob = async (txt, speaker) => {
         const audioRes = await fetch(uri.toString(), {
             method: 'POST',
             headers: {
-                'accept': 'audio/wav',
-                'content-type': 'application/json'
+                accept: 'audio/wav',
+                'content-type': 'application/json',
             },
-            body: JSON.stringify(jsonQuery)
+            body: JSON.stringify(jsonQuery),
         });
         if (audioRes.ok === false)
             throw new Error(`code: ${audioRes.status} message: ${audioRes.statusText}`);
@@ -60,23 +61,55 @@ const getAudioBlob = async (txt, speaker) => {
         throw new Error(e);
     }
 };
+const deeplTranslate = async (txt, key) => {
+    const f = await fetch(new URL('https://api-free.deepl.com/v2/translate').toString(), {
+        method: 'POST',
+        headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+        },
+        body: `auth_key=${key}&text=${txt}&source_lang=EN&target_lang=JA`,
+    });
+    if (f.ok === false)
+        throw new Error(`code: ${f.status} message: ${f.statusText}`);
+    const json = await f.json();
+    let res = '';
+    json.translations.forEach((t) => {
+        res += t.text;
+    });
+    return res;
+};
 const getLastModified = async (str, config) => {
     config.skip.forEach((e) => {
         str = str.replaceAll(e, '');
     });
     config.dictKey.forEach((key) => {
-        str = str.replaceAll(key, config.dict[key]);
+        const reg = new RegExp('\\b' + key + '\\b');
+        str = str.replace(reg, config.dict[key]);
     });
     if (config.translation === true && str.match(/\*\/\//) === null) {
-        const f = await fetch(new URL(`https://script.google.com/macros/s/AKfycbxgx1pJwLnAgpBP-bBjHO2G18oBhPJbrg9CyWBS1dc9HyfMgj0/exec?text=${str}`).toString());
-        const j = await f.json();
-        if (j.code === 200) {
-            str = j.text;
+        if (deeplEnableDom.checked && deeplApiKeyDom.value !== '') {
+            try {
+                str = await deeplTranslate(str, deeplApiKeyDom.value);
+            }
+            catch (e) {
+                const f = await fetch(new URL(`https://script.google.com/macros/s/AKfycbxgx1pJwLnAgpBP-bBjHO2G18oBhPJbrg9CyWBS1dc9HyfMgj0/exec?text=${str}`).toString());
+                const j = await f.json();
+                if (j.code === 200) {
+                    str = j.text;
+                }
+            }
+        }
+        else {
+            const f = await fetch(new URL(`https://script.google.com/macros/s/AKfycbxgx1pJwLnAgpBP-bBjHO2G18oBhPJbrg9CyWBS1dc9HyfMgj0/exec?text=${str}`).toString());
+            const j = await f.json();
+            if (j.code === 200) {
+                str = j.text;
+            }
         }
     }
     str = str.replace(/\*\/\//g, '');
     str = str.replace(/[a-zA-Z]\)/g, '');
-    str.match(/[亜-熙ぁ-んァ-ヶ]\ /g)?.forEach(reg => {
+    str.match(/[亜-熙ぁ-んァ-ヶ]\ /g)?.forEach((reg) => {
         str = str.replace(reg, reg.replace(/ /g, ''));
     });
     return str;
@@ -122,7 +155,7 @@ const main = async () => {
         span.addEventListener('click', async () => {
             dictList.removeChild(p);
             delete config.dict[key];
-            config.dictKey = config.dictKey.filter(v => v !== key);
+            config.dictKey = config.dictKey.filter((v) => v !== key);
             await updateLocalConfig();
         });
         dictList.appendChild(p);
@@ -141,10 +174,30 @@ const main = async () => {
         span.addEventListener('click', async () => {
             dictList.removeChild(p);
             delete config.dict[key];
-            config.dictKey = config.dictKey.filter(v => v !== key);
+            config.dictKey = config.dictKey.filter((v) => v !== key);
             await updateLocalConfig();
         });
         dictList.appendChild(p);
+    });
+    if (localStorage.getItem('deeplEnable') !== null) {
+        deeplEnableDom.click();
+        deeplApiKeyDom.removeAttribute('disabled');
+    }
+    if (localStorage.getItem('deeplApiKey') !== null) {
+        deeplApiKeyDom.value = localStorage.getItem('deeplApiKey') ?? '';
+    }
+    deeplEnableDom.addEventListener('change', () => {
+        if (deeplEnableDom.checked) {
+            deeplApiKeyDom.removeAttribute('disabled');
+            localStorage.setItem('deeplEnable', 'true');
+        }
+        else {
+            deeplApiKeyDom.setAttribute('disabled', '');
+            localStorage.removeItem('deeplEnable');
+        }
+    });
+    deeplApiKeyDom.addEventListener('change', () => {
+        localStorage.setItem('deeplApiKey', deeplApiKeyDom.value);
     });
     let timeout = true;
     const watcher = fs.watch(config.path);
@@ -152,7 +205,7 @@ const main = async () => {
         if (event.eventType !== 'change' && timeout === false)
             continue;
         timeout = false;
-        setTimeout(() => timeout = true, 100);
+        setTimeout(() => (timeout = true), 100);
         try {
             const responder = await fs.readFile(config.path, 'utf-8');
             const lastModified = await getLastModified(responder.split('\n')[responder.split('\n').length - 2], config);

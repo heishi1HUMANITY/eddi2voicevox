@@ -4,7 +4,7 @@
   "main": "index.html",
   "window": {
     "resizable": true,
-    "show_in_taskbar": false
+    "show_in_taskbar": true
   },
   "scripts": {
     "start": "nw .",

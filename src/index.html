@@ -11,6 +11,12 @@
         >speechresponder.out:
         <input type="text" name="speechresponder" id="speechresponder"
       /></label>
+      <label for="deeplEnable">
+        DeepL翻訳APIを使用: <input type="checkbox" id="deeplEnable" />
+      </label>
+      <label for="deeplKey">
+        Deepl API key: <input type="text" id="deeplKey" disabled />
+      </label>
       <label for="speaker"
         >speaker:
         <select name="speaker" id="speaker">
@@ -25,8 +31,7 @@
             登録
           </button></label
         >
-        <div id="dictList">
-        </div>
+        <div id="dictList"></div>
       </div>
     </main>
     <style>
